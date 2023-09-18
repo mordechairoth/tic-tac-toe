@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        html, body {
+            height: 100%;
+        }
+
+        html, body, *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .container {
+            height: 100%;
+            background: radial-gradient(ellipse at center, #feffff 0%,#ddf1f9 35%,#a0d8ef 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .game-info{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-bottom: 100px;
+            gap: 25px;
+            width: 400px;
+        }
+
+        .board{
+            height: 200px;
+            width: 200px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+
+        .game-cell {
+            height: 30%;
+            width: 30%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .game-stats {
+            align-self: stretch;
+            display: flex;
+            justify-content: space-between;
+        }
+        button{
+            color: white;
+padding: 10px 30px;
+border-radius: 5px;
+background: #f857a6;
+background: -webkit-linear-gradient(to right, #ff5858, #f857a6);
+background: linear-gradient(to right, #ff5858, #f857a6);
+box-shadow: 0 10px 10px -2px rgba(0,0,0,.25);
+cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="game-info">
+            <button id="init-button">Start</button>
+            <div class="game-stats">
+                    <div><span>Computer: </span><span id="computers-value"></span></div>
+                    <span id="current-player"></span>
+                    <div><span>You: </span><span id="users-value"></span></div>
+            </div>
+        </div>
+        <div class="board"></div>
+    </div>
+</body>
+<script src="./main.js"></script>
+<script>
+    const computersValueLabel = document.querySelector('#computers-value');
+    const usersValueLabel = document.querySelector('#users-value');
+    const currentPlayerLabel = document.querySelector('#current-player');
+
+    function setCurrentPlayerValue(value){
+        currentPlayerLabel.innerText = value;
+    }
+
+    function initGame(){
+        const usersValue = Math.random() > .5 ? 'X' : 'O';
+        computersValueLabel.innerText = usersValue === 'X' ? 'O' : 'X';
+        usersValueLabel.innerText = usersValue;
+        boxes.forEach(b => b.forEach(c => c.innerText = ''))
+        Game.init(usersValue);
+    }
+
+    function handelCellClick({row, col}){
+        const positionPlaced = Game.userPlaceItem({row, col});
+        boxes[positionPlaced.row][positionPlaced.col].innerText  = Game.usersValue;
+        if(Game.winner === Game.usersValue){
+            setCurrentPlayerValue('YOU WON')
+            return
+        }
+        if(Game.gameStatus === 'STOPPED'){
+            setCurrentPlayerValue('GAME OVER');
+            return;
+        }
+        setCurrentPlayerValue('COMPUTERS TURN')
+        setTimeout(() => {
+            const computersPosition = Game.computerPlaceItem();
+        boxes[computersPosition.row][computersPosition.col].innerText = Game.computersValue;
+        if(Game.winner === Game.computersValue){
+            setCurrentPlayerValue('COMPUTER WON');
+            return
+        }
+        if(Game.gameStatus === 'STOPPED'){
+            setCurrentPlayerValue('GAME OVER')
+            return;
+        }
+        setCurrentPlayerValue('YOUR TURN')
+        }, 1400)
+    }
+
+    const initButton = document.querySelector('#init-button');
+    initButton.onclick = () => {
+        initButton.innerText = 'RESTART'
+        initGame()
+        // check if computer should start the game
+        if(Game.computersValue === 'X'){
+            setCurrentPlayerValue('COMPUTERS TURN')
+            setTimeout(() => {
+            const computersPosition = Game.computerPlaceItem();
+        boxes[computersPosition.row][computersPosition.col].innerText = Game.computersValue;
+        setCurrentPlayerValue('YOUR TURN');
+        }, 1400)
+        }else{
+            setCurrentPlayerValue('YOUR TURN')
+        }
+    }
+    const boxStyle = 'border: solid 1px';
+    const boxes = [];
+    const gameBoard = document.querySelector('.board');
+    for(let i = 0; i < 3; i++){
+        const row = [];
+        boxes.push(row);
+        for(let j = 0; j < 3; j++){
+            const box = document.createElement('div');
+            box.style = boxStyle;
+            box.className = 'game-cell';
+            row.push(box);
+            gameBoard.append(box);
+            // hook up event listener
+            // on click just display alert
+            box.onclick = () => {
+                handelCellClick({row: i, col: j})
+            }
+        }
+    }
+</script>
+</html>
